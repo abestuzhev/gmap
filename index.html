@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Marker Clustering</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+        /*width: 700px;*/
+        /*height: 400px;*/
+      }
+      .container {max-width: 1200px; margin: 0 auto;}
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      p {
+        max-width: 700px;
+      }
+    </style>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="map"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAND9ubfxVl3HHDSrCdm9XIfxKkQnkyzR0&callback=initMap">
+    </script>
+    <!-- <script src="snazzy-info-window.js"></script> -->
+    <script src="custom-map.js"></script>
+  </body>
+</html>

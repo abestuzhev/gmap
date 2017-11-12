@@ -1,161 +1,253 @@
+ymaps.ready(function () {
+    var myMap = new ymaps.Map('map', {
+            center: [55.751574, 37.573856],
+            zoom: 9,
+            behaviors: ['default', 'scrollZoom'],
+            controls: ['zoomControl', 'fullscreenControl']
+        }, {
+            searchControlProvider: 'yandex#search'
+        }),
+        /**
+         * Создадим кластеризатор, вызвав функцию-конструктор.
+         * Список всех опций доступен в документации.
 
-function initMap() {
+         * @see https://api.yandex.ru/maps/doc/jsapi/2.1/ref/reference/Clusterer.xml#constructor-summary
+         */
 
-        var map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 3,
-          center: {lat: -28.024, lng: 140.887}
-        });
+         clusterIcons = [
+         {
+             href: 'm1.png',
+             size: [40, 40],
+             // Отступ, чтобы центр картинки совпадал с центром кластера.
+             offset: [-20, -20]
+         },
+         {
+             href: 'm1.png',
+             size: [40, 40],
+             offset: [-20, -20]
+         }],
 
-        // Create an array of alphabetical characters used to label the markers.
-        // var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+         MyIconContentLayout = ymaps.templateLayoutFactory.createClass(
+ '<div style="color: #FFFFFF; font-weight: bold;">$[properties.geoObjects.length]</div>'),
 
-        // Add some markers to the map.
-        // Note: The code uses the JavaScript Array.prototype.map() method to
-        // create an array of markers based on a given "locations" array.
-        // The map() method here has nothing to do with the Google Maps API.
-        var image = './img/icon-map-point.png';
-        // var markers = cafe.map(function(cafe, i) {
-        //   return new google.maps.Marker({
-        //     position: {lat: cafe[1], lng: cafe[2]},
-        //     // label: labels[i % labels.length],
-        //     icon: image,
-        //     title: cafe[0],
-        //   });
-        // });
+             clusterer = new ymaps.Clusterer({
+            /**
+             * Через кластеризатор можно указать только стили кластеров,
+             * стили для меток нужно назначать каждой метке отдельно.
+             * @see https://api.yandex.ru/maps/doc/jsapi/2.1/ref/reference/option.presetStorage.xml
+             */
+            // preset: 'islands#invertedVioletClusterIcons',
+            clusterIcons: clusterIcons,
+            clusterIconContentLayout: MyIconContentLayout,
+            /**
+             * Ставим true, если хотим кластеризовать только точки с одинаковыми координатами.
+             */
+            groupByCoordinates: false,
+            /**
+             * Опции кластеров указываем в кластеризаторе с префиксом "cluster".
+             * @see https://api.yandex.ru/maps/doc/jsapi/2.1/ref/reference/ClusterPlacemark.xml
+             */
+            clusterDisableClickZoom: true,
+            clusterHideIconOnBalloonOpen: false,
+            geoObjectHideIconOnBalloonOpen: false
+        }),
+        /**
+         * Функция возвращает объект, содержащий данные метки.
+         * Поле данных clusterCaption будет отображено в списке геообъектов в балуне кластера.
+         * Поле balloonContentBody - источник данных для контента балуна.
+         * Оба поля поддерживают HTML-разметку.
+         * Список полей данных, которые используют стандартные макеты содержимого иконки метки
+         * и балуна геообъектов, можно посмотреть в документации.
+         * @see https://api.yandex.ru/maps/doc/jsapi/2.1/ref/reference/GeoObject.xml
+         */
 
-        var markers = cafe.map(function(cafe, i) {
-          return new google.maps.Marker({
-            position: {lat: cafe[1], lng: cafe[2]},
-            // label: labels[i % labels.length],
-            icon: image,
-            title: cafe[0],
-          });
-        });
 
-        // for (var i = 0; i < cafe.length; i++) {
-        //   var cafe_place = markers[i];
-        //   var marker = new google.maps.Marker({
-        //     position: {lat: cafe_place[1], lng: cafe_place[2]},
-        //     map: map,
-        //     icon: image,
-        //     title: cafe_place[0]
-        //   });
+        //     getPointData = function (index) {
+        //     return {
+        //         balloonContentHeader: '',
+        //         balloonContentBody: '<div class="c-card-cafe c-card-map">'+
+        //         '<div class="c-card-map__header">'+
+        //             '<span class="popup-close" id="close-balloon" onclick="myMap.balloon.close()"></span>'+
+        //             '<a href="#" class="c-card-map__title">$[properties.name]</a>'+
+        //         '</div>'+
+        //         '<div class="c-card-map__body">'+
+        //             '<div class="c-card-cafe__img">'+
+        //             '<img src="img/cafe-foto.jpg" alt="">'+
+        //             '<a  href="#" class="c-card-cafe__menu">'+'<i class="icon-food-menu"></i>'+'меню</a>'+
+        //         '</div>'+
+        //         '<div class="c-card-cafe__body">'+
+        //             '<div class="c-card-cafe__item">' + '<b>Адрес: </b>' + '$[properties.address]</div>'+
+        //             '<div class="c-card-cafe__item">'+'<b>Телефон: </b>'+'$[properties.phoneNumber]</div>'+
+        //             '<div class="c-card-cafe__item">'+'<b>Время работы: </b>'+'$[properties.timeWork]</div>'+
+        //             '<div class="c-card-cafe__item c-card-cafe__subway">'+
+        //                 '$[properties.subway]'+
+        //             '</div>'+
+        //             '<div class="c-card-cafe__item c-card-cafe__entertainment">$[properties.entertainment]</div>'+
+        //             '<ul class="c-card-cafe-advantages">'+
+        //                 '<li class="c-card-cafe-advantages__item"><i class="advantages-coffe"></i></li>'+
+        //                 '<li class="c-card-cafe-advantages__item"><i class="advantages-guests"></i>150</li>'+
+        //                 '<li class="c-card-cafe-advantages__item"><i class="advantages-teddy"></i></li>'+
+        //                 '<li class="c-card-cafe-advantages__item"><i class="advantages-nipple"></i></li>'+
+        //                 '<li class="c-card-cafe-advantages__item"><i class="advantages-balloon"></i></li>'+
+        //                 '<li class="c-card-cafe-advantages__item"><i class="advantages-umbrella"></i></li>'+
+        //                 '<li class="c-card-cafe-advantages__item"><i class="advantages-bottle"></i></li>'+
+        //             '</ul>'+
+        //             '</div>'+
+        //         '</div>'+
+        //     '</div>',
+        //         balloonContentFooter: ''
+        //     };
+        // },
+
+        /*шаблон попапа*/
+        myBalloonLayout = ymaps.templateLayoutFactory.createClass(
+            '<div class="c-card-cafe c-card-map">'+
+            '<div class="c-card-map__header">'+
+            '<span class="popup-close" id="close-balloon" onclick="myMap.balloon.close()"></span>'+
+            '<a href="#" class="c-card-map__title">$[properties.name]</a>'+
+            '</div>'+
+            '<div class="c-card-map__body">'+
+            '<div class="c-card-cafe__img">'+
+            '<img src="img/cafe-foto.jpg" alt="">'+
+            '<a  href="#" class="c-card-cafe__menu">'+'<i class="icon-food-menu"></i>'+'меню</a>'+
+            '</div>'+
+            '<div class="c-card-cafe__body">'+
+            '<div class="c-card-cafe__item">' + '<b>Адрес: </b>' + '$[properties.address]</div>'+
+            '<div class="c-card-cafe__item">'+'<b>Телефон: </b>'+'$[properties.phoneNumber]</div>'+
+            '<div class="c-card-cafe__item">'+'<b>Время работы: </b>'+'$[properties.timeWork]</div>'+
+            '<div class="c-card-cafe__item c-card-cafe__subway">'+
+            '$[properties.subway]'+
+            '</div>'+
+            '<div class="c-card-cafe__item c-card-cafe__entertainment">$[properties.entertainment]</div>'+
+            '<ul class="c-card-cafe-advantages">'+
+            '<li class="c-card-cafe-advantages__item"><i class="advantages-coffe"></i></li>'+
+            '<li class="c-card-cafe-advantages__item"><i class="advantages-guests"></i>150</li>'+
+            '<li class="c-card-cafe-advantages__item"><i class="advantages-teddy"></i></li>'+
+            '<li class="c-card-cafe-advantages__item"><i class="advantages-nipple"></i></li>'+
+            '<li class="c-card-cafe-advantages__item"><i class="advantages-balloon"></i></li>'+
+            '<li class="c-card-cafe-advantages__item"><i class="advantages-umbrella"></i></li>'+
+            '<li class="c-card-cafe-advantages__item"><i class="advantages-bottle"></i></li>'+
+            '</ul>'+
+            '</div>'+
+            '</div>'+
+            '</div>'
+        ),
+        /**
+         * Функция возвращает объект, содержащий опции метки.
+         * Все опции, которые поддерживают геообъекты, можно посмотреть в документации.
+         * @see https://api.yandex.ru/maps/doc/jsapi/2.1/ref/reference/GeoObject.xml
+         */
+         getPointOptions = function () {
+         return {
+             iconImageHref: 'img/icons/icon-map-point.png',
+             // Размеры изображения иконки
+             iconImageSize: [44, 53],
+             // смещение картинки
+             iconImageOffset: [-22, -56],
+             // Размеры содержимого балуна
+             balloonContentSize: [660, 265],
+             // Задаем макет балуна - пользовательская картинка с контентом
+             balloonLayout: "default#imageWithContent",
+             // Смещение картинки балуна
+             balloonImageOffset: [-117, -300],
+             // Размеры картинки балуна
+             balloonImageSize: [660, 265],
+             // Балун не имеет тени
+             balloonShadow: false,
+             //Выравнивание по умолчанию
+             balloonAutoPan: false
+         };
+     },
+
+        placemarks = [
+           new ymaps.Placemark([55.74352990795752,37.56841313754272], {
+               name: 'АндерСон для Пап',
+               address: 'Московский, ул. Хабарова, дом 2, ТРЦ Новомосковский, вход со стороны пруда',
+               phoneNumber: '+7 (495) 125-49-07, +7 (495) 125-49-07',
+               timeWork: 'пн-вс с 09:00 до 23:00',
+               entertainment: 'Зоопарк, Ледовая Арена, Цирк, Театр кукол, Гулливер, Игровая площадка',
+               subway: '<img src="img/icons/icon-metro-1.png" alt="">Молодежная'
+           }, {
+               balloonContentLayout: myBalloonLayout
+           },getPointOptions()),
+           new ymaps.Placemark([55.8,37.9], {
+               name: 'АндерСон для Пап',
+               address: 'Московский, ул. Хабарова, дом 2, ТРЦ Новомосковский, вход со стороны пруда',
+               phoneNumber: '+7 (495) 125-49-07, +7 (495) 125-49-07',
+               timeWork: 'пн-вс с 09:00 до 23:00',
+               entertainment: 'Зоопарк, Ледовая Арена, Цирк, Театр кукол, Гулливер, Игровая площадка',
+               subway: '<img src="img/icons/icon-metro-1.png" alt="">Молодежная'
+           }, {
+               balloonContentLayout: myBalloonLayout
+           },getPointOptions()),
+           new ymaps.Placemark([59,31], {
+               name: 'АндерСон для Пап2',
+               address: 'Московский, ул. Хабарова, дом 2, ТРЦ Новомосковский, вход со стороны пруда',
+               phoneNumber: '+7 (495) 125-49-07, +7 (495) 125-49-07',
+               timeWork: 'пн-вс с 09:00 до 23:00',
+               entertainment: 'Зоопарк, Ледовая Арена, Цирк, Театр кукол, Гулливер, Игровая площадка',
+               subway: '<img src="img/icons/icon-metro-1.png" alt="">Молодежная'
+           }, {
+               balloonContentLayout: myBalloonLayout
+           },getPointOptions()),
+           new ymaps.Placemark([57,34], {
+               name: 'на Класносельской',
+               address: 'Московский, ул. Хабарова, дом 2',
+               phoneNumber: '+7 (495) 125-49-07, +7 (495) 125-49-07',
+               timeWork: 'пн-вс с 09:00 до 23:00',
+               entertainment: 'Зоопарк, Ледовая Арена, Цирк, Театр кукол, Гулливер, Игровая площадка',
+               subway: '<img src="img/icons/icon-metro-1.png" alt="">Молодежная'
+           }, {
+               balloonContentLayout: myBalloonLayout
+           },getPointOptions()),
+           new ymaps.Placemark([60,40], {
+               name: 'Тестовое кафе ',
+               address: 'Московский, ул. Хабарова, дом 2б Московский, ул. Хабарова, дом 2',
+               phoneNumber: '+7 (495) 125-49-07, +7 (495) 125-49-07',
+               timeWork: 'пн-вс с 09:00 до 23:00',
+               entertainment: 'Зоопарк, Ледовая Арена, Цирк, Театр кукол, Гулливер, Игровая площадка',
+               subway: '<img src="img/icons/icon-metro-1.png" alt="">Молодежная'
+           }, {
+               balloonContentLayout: myBalloonLayout
+           },getPointOptions())
+       ];
+
+       // Создаем коллекцию, в которую будем добавлять метки
+        // myCollection = new ymaps.GeoObjectCollection();
+
+        //дбавляем все метки в коллекцию геообъектов
+        // for(var i = 0, len = placemarks.length; i < len; i++) {
+        //     myCollection.add(placemarks[i]);
         // }
 
+    /**
+     * Данные передаются вторым параметром в конструктор метки, опции - третьим.
+     * @see https://api.yandex.ru/maps/doc/jsapi/2.1/ref/reference/Placemark.xml#constructor-summary
+     */
+    // for(var i = 0, len = placemarks.length; i < len; i++) {
+    //     geoObjects[i] = new ymaps.Placemark(points[i], getPointData(i), getPointOptions());
+    // }
 
- /*infoWindows*/
-         var contentString = '<div id="content">'+
-            '<div id="siteNotice">'+
-            '</div>'+
-            '<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
-            '<div id="bodyContent">'+
-            '<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large ' +
-            'sandstone rock formation in the southern part of the '+
-            'Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) '+
-            'south west of the nearest large town, Alice Springs; 450&#160;km '+
-            '(280&#160;mi) by road. Kata Tjuta and Uluru are the two major '+
-            'features of the Uluru - Kata Tjuta National Park. Uluru is '+
-            'sacred to the Pitjantjatjara and Yankunytjatjara, the '+
-            'Aboriginal people of the area. It has many springs, waterholes, '+
-            'rock caves and ancient paintings. Uluru is listed as a World '+
-            'Heritage Site.</p>'+
-            '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
-            'https://en.wikipedia.org/w/index.php?title=Uluru</a> '+
-            '(last visited June 22, 2009).</p>'+
-            '</div>'+
-            '</div>';
+    /**
+     * Можно менять опции кластеризатора после создания.
+     */
+    clusterer.options.set({
+        gridSize: 80,
+        clusterDisableClickZoom: false
+    });
 
-            var infowindow = new google.maps.InfoWindow({
-              content: contentString
-            });
+    /**
+     * В кластеризатор можно добавить javascript-массив меток (не геоколлекцию) или одну метку.
+     * @see https://api.yandex.ru/maps/doc/jsapi/2.1/ref/reference/Clusterer.xml#add
+     */
+    clusterer.add(placemarks);
+    myMap.geoObjects.add(clusterer);
 
-            marker.addListener('click', function() {
-              infowindow.open(map, marker);
-            });
+    /**
+     * Спозиционируем карту так, чтобы на ней были видны все объекты.
+     */
 
-        var clusterStyles = [
-          {
-            textColor: 'white',
-            textSize: 15,
-            url: 'img/m1.png',
-            height: 31,
-            width: 31
-          },
-         {
-            textColor: 'white',
-            textSize: 15,
-            url: 'img/m1.png',
-            height: 31,
-            width: 31
-          },
-         {
-            textColor: 'white',
-            textSize: 15,
-            url: 'img/m1.png',
-            height: 31,
-            width: 31
-          }
-        ];
-
-        var options = {
-            imagePath: './img/m',
-            gridSize: 31,
-            styles: clusterStyles
-            
-        };
-        // Add a marker clusterer to manage the markers.
-        var markerCluster = new MarkerClusterer(map, markers,
-          options);
-
-
-
-      }
-
-
-      var cafe = [
-        ['Bondi Beach', -33.890542, 151.274856],
-        ['Coogee Beach', -33.923036, 151.259052],
-        ['Cronulla Beach', -34.028249, 151.157507],
-        ['Manly Beach', -33.80010128657071, 151.28747820854187],
-        ['Maroubra Beach', -33.950198, 151.259302]
-      ];
-
-
-
-// Add a Snazzy Info Window to the marker
-    // var info = new SnazzyInfoWindow({
-    //     marker: marker,
-    //     content: '<h1>Styling with SCSS</h1>' +
-    //              '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce id urna eu sem fringilla ultrices.</p>' +
-    //              '<hr>' +
-    //              '<em>Snazzy Info Window</em>',
-    //     closeOnMapClick: false
-    // });
-    // info.open();
-
-
-      // var locations = [
-      //   {lat: -31.563910, lng: 147.154312},
-      //   {lat: -33.718234, lng: 150.363181},
-      //   {lat: -33.727111, lng: 150.371124},
-      //   {lat: -33.848588, lng: 151.209834},
-      //   {lat: -33.851702, lng: 151.216968},
-      //   {lat: -34.671264, lng: 150.863657},
-      //   {lat: -35.304724, lng: 148.662905},
-      //   {lat: -36.817685, lng: 175.699196},
-      //   {lat: -36.828611, lng: 175.790222},
-      //   {lat: -37.750000, lng: 145.116667},
-      //   {lat: -37.759859, lng: 145.128708},
-      //   {lat: -37.765015, lng: 145.133858},
-      //   {lat: -37.770104, lng: 145.143299},
-      //   {lat: -37.773700, lng: 145.145187},
-      //   {lat: -37.774785, lng: 145.137978},
-      //   {lat: -37.819616, lng: 144.968119},
-      //   {lat: -38.330766, lng: 144.695692},
-      //   {lat: -39.927193, lng: 175.053218},
-      //   {lat: -41.330162, lng: 174.865694},
-      //   {lat: -42.734358, lng: 147.439506},
-      //   {lat: -42.734358, lng: 147.501315},
-      //   {lat: -42.735258, lng: 147.438000},
-      //   {lat: -43.999792, lng: 170.463352}
-      // ]
+    myMap.setBounds(clusterer.getBounds(), {
+        checkZoomRange: true
+    });
+});
